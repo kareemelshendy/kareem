@@ -18,7 +18,10 @@
     "lucide-react": "^0.475.0",
     "next": "15.1.4",
     "react": "^19.0.0",
+    "react-audio-play": "^1.0.4",
     "react-dom": "^19.0.0",
+    "react-icons": "^5.5.0",
+    "react-player": "^2.16.0",
     "undefined": "^0.1.0",
     "wavesurfer.js": "^7.9.1"
   },

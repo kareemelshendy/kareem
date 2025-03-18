@@ -1,67 +1,87 @@
-'use client'
-import { useEffect, useRef } from "react";
+"use client";
+import { useEffect, useRef, useState } from "react";
+import { AudioPlayer, AudioPlayerRef } from "react-audio-play";
 
-function AudioStreamer() {
-  const audioRef = useRef(null);
+function SoundCloudPlayer() {
+  const playerRef = useRef<AudioPlayerRef>(null);
+  const [songs] = useState<string[]>([
+    "https://github.com/riyaddecoder/audio-files/raw/master/Anmone2-Aurthohin.mp3",
+    "https://serv100.albumaty.com/songs_2020/Albumaty.Com_Intro_Happy_Birth_Day_Intro.mp3",
+    "https://serv100.albumaty.com/songs_2020/Albumaty.Com_Walid_Tawfik_Enzel_Ya_gamel.mp3"
+    // "https://api.cloudpulse.projecx.io/api/storage/view/SONG/-_1735475570728.mp3"
+  ]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handleNextSong = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % songs.length);
+    playerRef.current?.play();
+  };
+
+  const handlePreviousSong = () => {
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + songs.length) % songs.length
+    );
+    playerRef.current?.play();
+  };
 
   useEffect(() => {
-    if (!window.MediaSource) {
-      console.error("MediaSource API is not supported in this browser.");
-      return;
-    }
-
-    const mediaSource = new MediaSource();
-    if (audioRef.current) {
-      (audioRef.current as HTMLMediaElement).src = URL.createObjectURL(mediaSource);
-    }
-
-    mediaSource.addEventListener("sourceopen", async () => {
-      const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
-      let start = 0;
-      const chunkSize = 65536; // 64KB per request
-      let fileSize = 10 * 1024 * 1024; // Assume 10MB (later updated)
-
-      const fetchChunk = async () => {
-        if (start >= fileSize) {
-          mediaSource.endOfStream();
-          return;
-        }
-
-        try {
-          const response = await fetch(`https://api.cloudpulse.projecx.io/api/storage/view/SONG/-_1737883116204.mp3`, {
-            headers: { Range: `bytes=${start}-${start + chunkSize - 1}` },
-          });
-
-          if (!response.ok) {
-            const error = new Error(`Failed to fetch chunk: ${response.status} ${response.statusText}`);
-            console.error(error);
-            throw error;
-          }
-
-          // Get total file size from Content-Range header
-          const contentRange = response.headers.get("Content-Range");
-          if (contentRange) {
-            const match = contentRange.match(/\/(\d+)$/);
-            if (match) fileSize = parseInt(match[1], 10);
-          }
-
-          const chunk = await response.arrayBuffer();
-          sourceBuffer.appendBuffer(chunk);
-          start += chunkSize;
-
-          // Wait for current chunk to be processed before fetching next
-          sourceBuffer.addEventListener("updateend", fetchChunk, { once: true });
-        } catch (error) {
-          console.error("Error fetching chunk:", error);
-          mediaSource.endOfStream();
-        }
-      };
-
-      fetchChunk();
-    });
+    console.log(playerRef.current);
   }, []);
 
-  return <audio ref={audioRef} controls />;
+  return (
+    <>
+    {/* <div className="w-full h-full flex flex-col items-center justify-center">
+      <AudioPlayer
+        src={songs[currentIndex]}
+        ref={playerRef}
+        preload="auto"
+        className="mb-4"
+        onError={(e) => console.log(e)}
+        color="#f2817c"
+        sliderColor="#f2817c"
+        autoPlay={true}
+        width={"100%"}
+      />
+      <div className="flex gap-2">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          onClick={() => playerRef.current?.play()}
+        >
+          Play
+        </button>
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded-md"
+          onClick={() => playerRef.current?.pause()}
+        >
+          Pause
+        </button>
+        <button
+          className="bg-gray-500 text-white px-4 py-2 rounded-md"
+          onClick={() => playerRef.current?.stop()}
+        >
+          Stop
+        </button>
+
+        <button
+          className="bg-gray-500 text-white px-4 py-2 rounded-md"
+          onClick={handlePreviousSong}
+        >
+          Previous Song
+        </button>
+        <button
+          className="bg-gray-500 text-white px-4 py-2 rounded-md"
+          onClick={handleNextSong}
+        >
+          Next Song
+        </button>
+      </div>
+    </div> */}
+    
+
+
+    <audio src={"https://serv100.albumaty.com/songs_2020/Albumaty.Com_Walid_Tawfik_Enzel_Ya_gamel.mp3"} controls preload="auto" />
+    </>
+  );
 }
 
-export default AudioStreamer;
+export default SoundCloudPlayer;
